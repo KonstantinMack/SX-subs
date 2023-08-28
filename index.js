@@ -63,9 +63,9 @@ channel.subscribe((message) => {
   }
 });
 
-setTimeout(() => {
-  console.log("Closing connection...");
-  ably.close();
-  connection.destroy();
-  console.log("Closed the connection to Ably.");
-}, 300000);
+// setTimeout(() => {
+//   console.log("Closing connection...");
+//   ably.close();
+//   connection.destroy();
+//   console.log("Closed the connection to Ably.");
+// }, 10000);
