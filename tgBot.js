@@ -27,8 +27,8 @@ bot.onText(/\/start (.+)/, (msg, match) => {
 
   if (resp) {
     connection.query(
-      "DELETE FROM telegram WHERE clerkId = ?",
-      resp,
+      "DELETE FROM telegram WHERE clerkId = ? OR telegramId = ?",
+      [resp, chatId],
       function (error) {
         if (error) {
           console.log(error);
