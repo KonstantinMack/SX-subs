@@ -3,7 +3,11 @@ import TelegramBot from "node-telegram-bot-api";
 import connection from "./db.js";
 import { shortenAddress, sendDevMsg } from "./helpers.js";
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
+const token =
+  process.env.NODE_ENV === "production"
+    ? process.env.TELEGRAM_BOT_TOKEN
+    : process.env.DEV_TELEGRAM_BOT_TOKEN;
+
 const bot = new TelegramBot(token, { polling: true });
 
 bot.onText(/\/start (.+)/, (msg, match) => {
@@ -58,7 +62,12 @@ bot.onText(/\/tipsters/, (msg) => {
       }
       const tipsters = results.map((result) => result.bettor);
       const tipsterMsg = `*Tipsters:* \n- ${tipsters
-        .map((tipster) => shortenAddress(tipster))
+        .map(
+          (tipster) =>
+            `[${shortenAddress(
+              tipster
+            )}](https://www.sx-lab.bet/user/${tipster})`
+        )
         .join(" \n- ")}`;
       bot.sendMessage(chatId, tipsterMsg, { parse_mode: "Markdown" });
     }
