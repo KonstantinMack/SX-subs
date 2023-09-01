@@ -5,6 +5,10 @@ import connection from "./db.js";
 import bot from "./tgBot.js";
 import { createBetMsg, sendDevMsg } from "./helpers.js";
 
+process.env.NODE_ENV === "production"
+  ? console.log("Using production env")
+  : console.log("Using development env");
+
 async function createTokenRequest() {
   const response = await axios.get("https://api.sx.bet/user/token", {
     headers: {
