@@ -3,7 +3,7 @@ import Ably from "ably";
 import axios from "axios";
 import connection from "./db.js";
 import bot from "./tgBot.js";
-import { createBetMsg } from "./helpers.js";
+import { createBetMsg, sendDevMsg } from "./helpers.js";
 
 async function createTokenRequest() {
   const response = await axios.get("https://api.sx.bet/user/token", {
@@ -33,7 +33,7 @@ console.log("Connected to Ably!");
 // get the channel to subscribe to
 const channel = ably.channels.get(`recent_trades`);
 channel.subscribe((message) => {
-  console.log(message.data);
+  console.log({ _id: message.data._id, marketHash: message.data.marketHash });
 
   const data = message.data;
 
@@ -45,7 +45,11 @@ channel.subscribe((message) => {
        WHERE bettor = ?`,
       data.bettor,
       async function (error, results) {
-        if (error) throw error;
+        if (error) {
+          sendDevMsg(error, "Error in fetching tipsters from db");
+          console.log({ error });
+          return;
+        }
         if (results.length === 0) return;
         try {
           const betMsg = await createBetMsg(data);
@@ -56,16 +60,10 @@ channel.subscribe((message) => {
             });
           });
         } catch (error) {
-          console.log(error);
+          sendDevMsg(error, "Error in sending bet message");
+          console.log({ error });
         }
       }
     );
   }
 });
-
-// setTimeout(() => {
-//   console.log("Closing connection...");
-//   ably.close();
-//   connection.destroy();
-//   console.log("Closed the connection to Ably.");
-// }, 10000);

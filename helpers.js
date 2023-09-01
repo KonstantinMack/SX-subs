@@ -1,5 +1,6 @@
 import "dotenv/config";
 import axios from "axios";
+import bot from "./tgBot.js";
 import {
   MARKET_TYPES,
   BASE_TOKEN_DECIMALS,
@@ -38,6 +39,13 @@ const convertStake = (stake, baseToken) => {
 
 const shortenAddress = (address) => {
   return address.slice(0, 7) + "..." + address.slice(-7);
+};
+
+const sendDevMsg = (msg, info) => {
+  const devMsg = `++++++++ Error: ++++++++\n${
+    info ?? `Info: ${info}\n`
+  }}${JSON.stringify(msg)}`;
+  bot.sendMessage(process.env.DEV_TG, devMsg);
 };
 
 const createBetMsg = async (betData) => {
@@ -83,4 +91,4 @@ const createBetMsg = async (betData) => {
   return betMsg;
 };
 
-export { createBetMsg, shortenAddress };
+export { createBetMsg, shortenAddress, sendDevMsg };

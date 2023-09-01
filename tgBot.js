@@ -1,7 +1,7 @@
 import "dotenv/config";
 import TelegramBot from "node-telegram-bot-api";
 import connection from "./db.js";
-import { shortenAddress } from "./helpers.js";
+import { shortenAddress, sendDevMsg } from "./helpers.js";
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
@@ -26,9 +26,17 @@ bot.onText(/\/start (.+)/, (msg, match) => {
       "DELETE FROM telegram WHERE clerkId = ?",
       resp,
       function (error) {
-        if (error) throw error;
+        if (error) {
+          console.log(error);
+          sendDevMsg(error, "Error in deleting entry by clerkId");
+          return;
+        }
         connection.query("INSERT INTO telegram SET ?", user, function (error) {
-          if (error) throw error;
+          if (error) {
+            console.log(error);
+            sendDevMsg(error, "Error in inserting telegramId into db");
+            return;
+          }
         });
       }
     );
@@ -43,7 +51,11 @@ bot.onText(/\/tipsters/, (msg) => {
     "SELECT bettor FROM favourites WHERE address IN (SELECT clerkId FROM telegram WHERE telegramId = ?)",
     chatId,
     function (error, results) {
-      if (error) throw error;
+      if (error) {
+        console.log(error);
+        sendDevMsg(error, "Error in fetching tipsters from db");
+        return;
+      }
       const tipsters = results.map((result) => result.bettor);
       const tipsterMsg = `*Tipsters:* \n- ${tipsters
         .map((tipster) => shortenAddress(tipster))
@@ -59,7 +71,11 @@ bot.onText(/\/stop/, (msg) => {
     "DELETE FROM telegram WHERE telegramId = ?",
     chatId,
     function (error) {
-      if (error) throw error;
+      if (error) {
+        console.log(error);
+        sendDevMsg(error, "Error in deleting entry by telegramId");
+        return;
+      }
       bot.sendMessage(
         chatId,
         "Stopped notifications. To restart notifications log into sx-lab.bet and connect your account again."
