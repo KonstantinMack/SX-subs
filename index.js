@@ -10,6 +10,7 @@ process.env.NODE_ENV === "production"
   : console.log("Using development env");
 
 async function createTokenRequest() {
+  console.log({ api_key: process.env.SX_BET_API_KEY });
   const response = await axios.get("https://api.sx.bet/user/token", {
     headers: {
       "x-api-key": process.env.SX_BET_API_KEY,
@@ -26,6 +27,7 @@ const ably = new Ably.Realtime.Promise({
       // `x-api-key: [YOUR_API_KEY]` as a header
       callback(null, tokenRequest);
     } catch (error) {
+      console.log({ error });
       callback(error, null);
     }
   },
