@@ -5,6 +5,7 @@ import {
   MARKET_TYPES,
   BASE_TOKEN_DECIMALS,
   BASE_TOKEN_NAMES,
+  SPORTS,
 } from "./constants.js";
 
 const fetchMarketData = async (marketHash) => {
@@ -48,6 +49,14 @@ const sendDevMsg = (msg, info) => {
   bot.sendMessage(process.env.DEV_TG, devMsg);
 };
 
+function createTemplate(template) {
+  return (vars) => {
+    return template.replace(/<([^>]+)>/g, (_, key) => {
+      return vars[key] || "";
+    });
+  };
+}
+
 const createBetMsg = async (betData) => {
   const marketData = await fetchMarketData(betData.marketHash);
   if (!marketData) return "No bet data found";
@@ -80,15 +89,25 @@ const createBetMsg = async (betData) => {
       ? marketData.outcomeOneName
       : marketData.outcomeTwoName
   }
-*Bettor:* [${shortenAddress(betData.bettor)}](https://www.sx-lab.bet/user/${
-    betData.bettor
-  })
+*Bettor:* [<bettor>](https://www.sx-lab.bet/user/${betData.bettor})
 *Stake:* ${convertStake(betData.stake, betData.baseToken)} ${
     BASE_TOKEN_NAMES[betData.baseToken]
   }
 *Odds:* ${convertOdds(betData.odds)}\n`.replace("_", "\\_");
 
-  return betMsg;
+  const betMsgTemplate = createTemplate(betMsg);
+
+  return [betMsgTemplate, marketData.sportLabel];
 };
 
-export { createBetMsg, shortenAddress, sendDevMsg };
+const filterSports = (sportsFilter, betSportLabel, allowParlay = true) => {
+  if (allowParlay && betSportLabel === "Daily Parlays") return true;
+  const betFavSports = JSON.parse(sportsFilter);
+  if (betFavSports.includes("All")) return true;
+  else if (betFavSports.includes(betSportLabel)) return true;
+  else if (betFavSports.includes("Other") && !SPORTS.includes(betSportLabel))
+    return true;
+  else return false;
+};
+
+export { createBetMsg, shortenAddress, sendDevMsg, filterSports };

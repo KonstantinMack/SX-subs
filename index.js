@@ -3,7 +3,7 @@ import Ably from "ably";
 import axios from "axios";
 import connection from "./db.js";
 import bot from "./tgBot.js";
-import { createBetMsg, sendDevMsg } from "./helpers.js";
+import { createBetMsg, sendDevMsg, filterSports } from "./helpers.js";
 
 process.env.NODE_ENV === "production"
   ? console.log("Using production env")
@@ -41,11 +41,18 @@ channel.subscribe((message) => {
 
   const data = message.data;
 
-  if (data.tradeStatus === "SUCCESS" && data.maker === false) {
+  if (data.tradeStatus === "SUCCESS") {
     connection.query(
-      `SELECT fv.address, fv.bettor, tg.telegramId
+      `SELECT 
+        fv.userId, 
+        fv.bettor, 
+        fv.name, 
+        fv.makerFilter, 
+        fv.sportsFilter, 
+        fv.stakeFilter, 
+        tg.telegramId
        FROM favourites fv
-       JOIN telegram tg ON fv.address = tg.clerkId
+       JOIN telegram tg ON fv.userId = tg.clerkId
        WHERE bettor = ?`,
       data.bettor,
       async function (error, results) {
@@ -56,12 +63,20 @@ channel.subscribe((message) => {
         }
         if (results.length === 0) return;
         try {
-          const betMsg = await createBetMsg(data);
-          results.map((result) => {
-            bot.sendMessage(result.telegramId, betMsg, {
-              parse_mode: "Markdown",
-              disable_web_page_preview: true,
-            });
+          const [betMsgTemplate, sportsLabel] = await createBetMsg(data);
+          results.forEach((result) => {
+            if (data.betTimeValue < result.stakeFilter) return;
+            if (data.maker && result.makerFilter === "taker") return;
+            if (!data.maker && result.makerFilter === "maker") return;
+            if (!filterSports(result.sportsFilter, sportsLabel)) return;
+            bot.sendMessage(
+              result.telegramId,
+              betMsgTemplate({ bettor: result.name ?? data.bettor }),
+              {
+                parse_mode: "Markdown",
+                disable_web_page_preview: true,
+              }
+            );
           });
         } catch (error) {
           sendDevMsg(error, "Error in sending bet message");

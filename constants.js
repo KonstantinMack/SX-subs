@@ -47,4 +47,19 @@ const BASE_TOKEN_DECIMALS = {
   "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063": 18,
 };
 
-export { MARKET_TYPES, BASE_TOKEN_NAMES, BASE_TOKEN_DECIMALS };
+const SPORTS = [
+  "All",
+  "Baseball",
+  "Basketball",
+  "Crypto",
+  "E Sports",
+  "Football",
+  "Hockey",
+  "Mixed Martial Arts",
+  "Racing",
+  "Soccer",
+  "Tennis",
+  "Other",
+];
+
+export { MARKET_TYPES, BASE_TOKEN_NAMES, BASE_TOKEN_DECIMALS, SPORTS };
