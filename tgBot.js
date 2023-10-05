@@ -52,7 +52,7 @@ bot.onText(/\/start (.+)/, (msg, match) => {
 bot.onText(/\/tipsters/, (msg) => {
   const chatId = msg.chat.id;
   connection.query(
-    "SELECT bettor FROM favourites WHERE address IN (SELECT clerkId FROM telegram WHERE telegramId = ?)",
+    "SELECT bettor FROM favourites WHERE userId IN (SELECT clerkId FROM telegram WHERE telegramId = ?)",
     chatId,
     function (error, results) {
       if (error) {
