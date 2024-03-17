@@ -90,6 +90,7 @@ const createBetMsg = async (betData) => {
       : marketData.outcomeTwoName
   }
 *Bettor:* [<bettor>](https://www.sx-lab.bet/user/${betData.bettor})
+*Bet time:* ${betData.betTime > marketData.gameTime ? "Inplay" : "Pregame"}
 *Stake:* ${convertStake(betData.stake, betData.baseToken)} ${
     BASE_TOKEN_NAMES[betData.baseToken]
   }
