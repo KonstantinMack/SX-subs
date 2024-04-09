@@ -19,6 +19,6 @@ const prodDb = {
 
 const dbConfig = process.env.NODE_ENV === "production" ? prodDb : devDb;
 
-const connection = mysql.createConnection(dbConfig);
+const connection = mysql.createPool(dbConfig);
 
 export default connection;

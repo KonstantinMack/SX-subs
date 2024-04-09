@@ -67,21 +67,15 @@ const createBetMsg = async (betData) => {
     marketData.leagueLabel === "Parlays"
       ? marketData.legs
           .map((leg) => {
-            return `[${
-              leg.homeTeamFirst
-                ? `${leg.teamOneName} vs ${leg.teamTwoName}`
-                : `${leg.teamTwoName} vs ${leg.teamOneName}`
-            }](${createLinkURL(leg)})\n*Bet:* ${
+            return `[${`${leg.teamOneName} vs ${leg.teamTwoName}`}](${createLinkURL(
+              leg
+            )})\n*Bet:* ${
               leg.bettingOutcomeOne ? leg.outcomeOneName : leg.outcomeTwoName
             }\n`;
           })
           .join("")
-      : marketData.homeTeamFirst
-      ? `[${marketData.teamOneName} vs ${
+      : `[${marketData.teamOneName} vs ${
           marketData.teamTwoName
-        }](${createLinkURL(marketData)})`
-      : `[${marketData.teamTwoName} vs ${
-          marketData.teamOneName
         }](${createLinkURL(marketData)})`
   }
 *Bet:* ${
