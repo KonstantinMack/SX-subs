@@ -10,6 +10,47 @@ const token =
 
 const bot = new TelegramBot(token, { polling: true });
 
+const removeBlockedTelegramId = (telegramId) => {
+  return new Promise((resolve) => {
+    connection.query(
+      "DELETE FROM telegram WHERE telegramId = ?",
+      [telegramId],
+      function (error) {
+        if (error) {
+          console.log(error);
+          sendDevMsg(error, "Error in deleting blocked telegramId");
+        }
+        resolve();
+      }
+    );
+  });
+};
+
+const isForbiddenTelegramError = (error) => {
+  return error?.response?.statusCode === 403;
+};
+
+const safeSendMessage = async (chatId, text, options = {}) => {
+  try {
+    await bot.sendMessage(chatId, text, options);
+    return true;
+  } catch (error) {
+    if (isForbiddenTelegramError(error)) {
+      await removeBlockedTelegramId(chatId);
+      console.log({
+        chatId,
+        statusCode: error?.response?.statusCode,
+        description: error?.response?.body?.description,
+      });
+      return false;
+    }
+
+    console.log(error);
+    sendDevMsg(error, `Error in sending message to telegramId: ${chatId}`);
+    return false;
+  }
+};
+
 bot.onText(/\/start (.+)/, (msg, match) => {
   // 'msg' is the received Message from Telegram
   // 'match' is the result of executing the regexp above on the text content
@@ -45,7 +86,7 @@ bot.onText(/\/start (.+)/, (msg, match) => {
       }
     );
 
-    bot.sendMessage(chatId, "Connected sx-lab account to telegram");
+    safeSendMessage(chatId, "Connected sx-lab account to telegram");
   }
 });
 
@@ -69,7 +110,7 @@ bot.onText(/\/tipsters/, (msg) => {
             )}](https://www.sx-lab.bet/user/${tipster})`
         )
         .join(" \n- ")}`;
-      bot.sendMessage(chatId, tipsterMsg, { parse_mode: "Markdown" });
+      safeSendMessage(chatId, tipsterMsg, { parse_mode: "Markdown" });
     }
   );
 });
@@ -85,7 +126,7 @@ bot.onText(/\/stop/, (msg) => {
         sendDevMsg(error, "Error in deleting entry by telegramId");
         return;
       }
-      bot.sendMessage(
+      safeSendMessage(
         chatId,
         "Stopped notifications. To restart notifications log into sx-lab.bet and connect your account again."
       );
@@ -93,4 +134,5 @@ bot.onText(/\/stop/, (msg) => {
   );
 });
 
+export { safeSendMessage };
 export default bot;

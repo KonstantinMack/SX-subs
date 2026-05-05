@@ -2,7 +2,7 @@ import "dotenv/config";
 import Ably from "ably";
 import axios from "axios";
 import connection from "./db.js";
-import bot from "./tgBot.js";
+import { safeSendMessage } from "./tgBot.js";
 import { createBetMsg, sendDevMsg, filterSports } from "./helpers.js";
 
 process.env.NODE_ENV === "production"
@@ -71,7 +71,7 @@ channel.subscribe((message) => {
             if (data.maker && result.makerFilter === "taker") return;
             if (!data.maker && result.makerFilter === "maker") return;
             if (!filterSports(result.sportsFilter, sportsLabel)) return;
-            bot.sendMessage(
+            safeSendMessage(
               result.telegramId,
               betMsgTemplate({ bettor: result.name ?? data.bettor }),
               {

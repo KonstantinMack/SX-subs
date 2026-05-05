@@ -46,7 +46,12 @@ const sendDevMsg = (msg, info) => {
   const devMsg = `++++++++ Error: ++++++++\n${
     info ?? `Info: ${info}\n`
   }}${JSON.stringify(msg)}`;
-  bot.sendMessage(process.env.DEV_TG, devMsg);
+  bot.sendMessage(process.env.DEV_TG, devMsg).catch((error) => {
+    console.log({
+      info: "Failed to send dev telegram message",
+      error,
+    });
+  });
 };
 
 function createTemplate(template) {
